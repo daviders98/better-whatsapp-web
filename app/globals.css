@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.animated-border-box, .animated-border-box-glow {
+  max-height: 200px;
+  max-width: 250px;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  overflow: hidden; 
+  z-index: 0;
+  border-radius: 10px;
+}
+
+.animated-border-box-glow {
+  overflow: hidden;
+  filter: blur(20px);
+  opacity: 0; /* hide by default */
+  transition: opacity 0.3s ease;
+}
+
+/* show glow on hover */
+.feature-card:hover .animated-border-box-glow {
+  opacity: 1;
+}
+
+.animated-border-box:before,
+.animated-border-box-glow:before {
+  content: '';
+  z-index: -2;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  width: 99999px;
+  height: 99999px;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-image: conic-gradient(
+    rgba(0,0,0,0),
+    #35b5fd, /* glow color */
+    rgba(0,0,0,0) 25%
+  );
+  animation: rotate 4s linear infinite;
+  border-radius: inherit;
+}
+
+.animated-border-box:after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 5px;
+  top: 5px;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  background: #292a2e; /* card background */
+  border-radius: 7px;
+}
+
+@keyframes rotate {
+  100% {
+    transform: translate(-50%, -50%) rotate(1turn);
+  }
+}
+
+/* Slow spin animation */
+@keyframes spin-slow {
+  100% {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
