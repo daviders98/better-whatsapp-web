@@ -7,6 +7,7 @@ function Loading() {
     <center style={{ display: "grid", placeItems: "center", height: "100vh" }}>
             <div style={{width:"200px"}}>
                 <Image
+                    loading="eager"
                     src="/images/logo.png"
                     alt="logo"
                     style={{ marginBottom: 8}}

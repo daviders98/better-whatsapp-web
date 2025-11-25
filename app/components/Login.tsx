@@ -1,13 +1,20 @@
 "use client";
 
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../../firebaseConfig";
+import { auth, db, provider } from "../../firebaseConfig";
 import Image from "next/image";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function Login() {
   const signInWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const {user} = await signInWithPopup(auth, provider);
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        name: user.displayName,
+        photo: user.photoURL,
+        createdAt: Date.now()
+      });
     } catch (error) {
       console.error("Login error:", error);
     }
