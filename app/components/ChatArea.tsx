@@ -1,4 +1,25 @@
+import { useEffect, useState } from "react";
+import { auth } from "@/firebaseConfig";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { getChatOtherUser } from "@/app/lib/chats";
+
 export default function ChatArea({ chatId, onBack }: { chatId: string, onBack: () => void }) {
+  const [user] = useAuthState(auth);
+  const [otherUser, setOtherUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadUser({email}:{email:string | null;}) {
+      const otherEmail = await getChatOtherUser(chatId, email);
+      setOtherUser(otherEmail);
+    }
+
+    if(user){
+        loadUser({email: user.email});
+    }
+  }, [chatId, user]);
+
   return (
     <div className="h-full flex flex-col">
 
@@ -16,20 +37,14 @@ export default function ChatArea({ chatId, onBack }: { chatId: string, onBack: (
           ←
         </button>
 
-        <span>Chat with {chatId}</span>
+        <span>
+          Chat with {otherUser ?? "Loading..."}
+        </span>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-auto p-4">
-        {/* messages */}
-      </div>
+      <div className="flex-1 overflow-auto p-4">{/* Messages */}</div>
 
-      {/* Input */}
-      <div className="
-        p-3 border-t 
-        bg-white dark:bg-[#202c33] 
-        border-gray-300 dark:border-gray-700
-      ">
+      <div className="p-3 border-t bg-white dark:bg-[#202c33] border-gray-300 dark:border-gray-700">
         <input
           className="
             w-full rounded p-2 
