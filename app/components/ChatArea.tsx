@@ -17,8 +17,10 @@ export default function ChatArea({
     if (!user) return;
 
     async function loadUser({ email }: { email: string | null }) {
-      const otherEmail = await getChatOtherUser(chatId, email);
-      setOtherUser(otherEmail);
+      const otherUserData = await getChatOtherUser(chatId, email);
+      if (otherUserData) {
+        setOtherUser(otherUserData.email);
+      }
     }
 
     if (user) {

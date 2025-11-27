@@ -27,30 +27,20 @@ export default function Home() {
         <Loading />
       ) : (
         <div className="flex h-screen w-screen overflow-hidden bg-gray-100 dark:bg-[#01273C]">
-          {/* SIDEBAR */}
           <div
             className={`
           border-r border-gray-300 dark:border-gray-700 
-          bg-white dark:bg-[#252f35] 
-          h-full
-          
-          /* Desktop width */
-          md:w-[30%] md:min-w-[280px]
-
-          /* Mobile behavior */
-          w-full 
+          bg-white dark:bg-[#252f35] h-full
+          md:w-[30%] md:min-w-[280px] w-full 
           ${selectedChat ? "hidden md:block" : "block"}
         `}
           >
             <SideBar onSelectChat={setSelectedChat} />
           </div>
 
-          {/* CHAT AREA */}
           <div
             className={`
           flex-1 bg-[#f0f2f5] dark:bg-[#0b141a] h-full
-          
-          /* Mobile behavior */
           ${!selectedChat ? "hidden md:block" : "block w-full"}
         `}
           >
