@@ -3,44 +3,47 @@ import { auth } from "@/firebaseConfig";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getChatOtherUser } from "@/app/lib/chats";
 
-export default function ChatArea({ chatId, onBack }: { chatId: string, onBack: () => void }) {
+export default function ChatArea({
+  chatId,
+  onBack,
+}: {
+  chatId: string;
+  onBack: () => void;
+}) {
   const [user] = useAuthState(auth);
   const [otherUser, setOtherUser] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
-    async function loadUser({email}:{email:string | null;}) {
+    async function loadUser({ email }: { email: string | null }) {
       const otherEmail = await getChatOtherUser(chatId, email);
       setOtherUser(otherEmail);
     }
 
-    if(user){
-        loadUser({email: user.email});
+    if (user) {
+      loadUser({ email: user.email });
     }
   }, [chatId, user]);
 
   return (
     <div className="h-full flex flex-col">
-
-      <div className="
+      {otherUser && (
+        <div
+          className="
         border-b p-4 flex items-center gap-3
         bg-white dark:bg-[#202c33] 
         text-gray-900 dark:text-gray-100
-        border-gray-300 dark:border-gray-700
-      ">
-        
-        <button 
-          onClick={onBack}
-          className="md:hidden text-xl px-2"
+        border-gray-300 dark:border-gray-700 select-none
+      "
         >
-          ←
-        </button>
+          <button onClick={onBack} className="md:hidden text-xl px-2">
+            ←
+          </button>
 
-        <span>
-          Chat with {otherUser ?? "Loading..."}
-        </span>
-      </div>
+          <span>{otherUser}</span>
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto p-4">{/* Messages */}</div>
 
