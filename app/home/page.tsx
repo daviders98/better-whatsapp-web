@@ -8,10 +8,11 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/firebaseConfig";
 import { useRouter } from "next/navigation";
 import Loading from "../components/Loading";
+import { ChatsData } from "../types/chat";
 
 export default function Home() {
   const [user, loading] = useAuthState(auth);
-  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [selectedChat, setSelectedChat] = useState<ChatsData | null>(null);
   const router = useRouter();
 
   const handleBack = () => setSelectedChat(null);
@@ -47,7 +48,7 @@ export default function Home() {
             {!selectedChat ? (
               <EmptyChat />
             ) : (
-              <ChatArea chatId={selectedChat} onBack={handleBack} />
+              <ChatArea chatData={selectedChat} onBack={handleBack} />
             )}
           </div>
         </div>

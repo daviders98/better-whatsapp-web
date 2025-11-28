@@ -12,7 +12,7 @@ import { signOut, User } from "firebase/auth";
 export default function Sidebar({
   onSelectChat,
 }: {
-  onSelectChat: (id: string) => void;
+  onSelectChat: (chatData: ChatsData) => void;
 }) {
   const [user, loading] = useAuthState(auth);
   const [chats, setChats] = useState<ChatsData[]>([]);
@@ -37,7 +37,7 @@ export default function Sidebar({
     if (!email) return;
 
     try {
-      const chatId = await createOrGetChat({
+      const chatData = await createOrGetChat({
         currentEmail: user.email,
         currentPhoto: user.photoURL,
         type: email === user.email ? "me" : "dm",
@@ -45,7 +45,7 @@ export default function Sidebar({
       });
 
       await fetchChats(user);
-      onSelectChat(chatId);
+      onSelectChat(chatData as ChatsData);
     } catch (e) {
       alert("Unable to create chat.");
     }
@@ -121,7 +121,7 @@ export default function Sidebar({
                     <div className="absolute right-0 mt-2 bg-white dark:bg-gray-800 shadow-md rounded-xl w-32 p-2 z-50">
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left text-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl flex justify-between"
+                        className="w-full text-left text-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl flex justify-between select-none"
                       >
                         <LogOut className="w-5 h-5" />
                         Logout
@@ -140,10 +140,10 @@ export default function Sidebar({
               return (
                 <div
                   key={chat.id}
-                  onClick={() => onSelectChat(chat.id)}
+                  onClick={() => onSelectChat(chat)}
                   className="p-2 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-[#2a3942] transition text-gray-800 dark:text-gray-100 flex items-center"
                 >
-                  <div className="w-12 h-12 relative">
+                  <div className="w-12 h-12 relative shrink-0 select-none">
                     <Image
                       src={display.photoURL}
                       alt="chat image"

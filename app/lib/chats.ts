@@ -5,12 +5,26 @@ import {
   where,
   getDocs,
   addDoc,
-  doc,
-  getDoc,
+  DocumentData,
+  QueryDocumentSnapshot,
   setDoc,
 } from "firebase/firestore";
 import { ChatsData, ChatType, FirestoreChatData } from "../types/chat";
 import { EmbeddedUser } from "../types/user";
+
+function docToChat(doc: QueryDocumentSnapshot<DocumentData>): ChatsData {
+  const d = doc.data() as Partial<FirestoreChatData>;
+
+  return {
+    id: doc.id,
+    type: (d.type as ChatsData["type"]) || "dm",
+    participants: Array.isArray(d.participants) ? d.participants : [],
+    createdAt: d.createdAt,
+    users: (d.users as Record<string, EmbeddedUser>) || {},
+    groupName: typeof d.groupName === "string" ? d.groupName : null,
+    groupImage: typeof d.groupImage === "string" ? d.groupImage : null,
+  };
+}
 
 export async function createOrGetChat({
   type,
@@ -26,7 +40,7 @@ export async function createOrGetChat({
   groupName?: string;
   groupImage?: string;
   currentPhoto?: string | null | undefined;
-}) {
+}): Promise<ChatsData> {
   if (!currentEmail) throw new Error("currentEmail is required");
 
   try {
@@ -40,9 +54,12 @@ export async function createOrGetChat({
       );
 
       const snap = await getDocs(q);
-      if (!snap.empty) return snap.docs[0].id;
 
-      const newChat = await addDoc(chatsRef, {
+      if (!snap.empty) {
+        return docToChat(snap.docs[0]);
+      }
+
+      const payload: FirestoreChatData = {
         type: "me",
         participants: [currentEmail],
         createdAt: Date.now(),
@@ -53,9 +70,18 @@ export async function createOrGetChat({
             name: "You",
           } as EmbeddedUser,
         },
-      });
+      };
 
-      return newChat.id;
+      const newChat = await addDoc(chatsRef, payload);
+      return {
+        id: newChat.id,
+        type: payload.type,
+        participants: payload.participants,
+        createdAt: payload.createdAt,
+        users: payload.users,
+        groupName: null,
+        groupImage: null,
+      } as ChatsData;
     }
 
     if (type === "dm") {
@@ -71,17 +97,21 @@ export async function createOrGetChat({
       );
 
       const snap = await getDocs(q);
+
       const existing = snap.docs.find((doc) => {
         const data = doc.data() as FirestoreChatData;
         return (
+          Array.isArray(data.participants) &&
           data.participants.length === 2 &&
           data.participants.includes(otherEmail)
         );
       });
 
-      if (existing) return existing.id;
+      if (existing) {
+        return docToChat(existing);
+      }
 
-      const newChat = await addDoc(chatsRef, {
+      const payload: FirestoreChatData = {
         type: "dm",
         participants: [currentEmail, otherEmail],
         createdAt: Date.now(),
@@ -90,19 +120,29 @@ export async function createOrGetChat({
             email: currentEmail,
             photoURL: currentPhoto ?? null,
           } as EmbeddedUser,
-
           [otherEmail]: {
             email: otherEmail,
             photoURL: null,
           } as EmbeddedUser,
         },
-      });
+      };
 
-      return newChat.id;
+      const newChat = await addDoc(chatsRef, payload);
+      return {
+        id: newChat.id,
+        type: payload.type,
+        participants: payload.participants,
+        createdAt: payload.createdAt,
+        users: payload.users,
+        groupName: null,
+        groupImage: null,
+      } as ChatsData;
     }
 
     if (type === "group") {
-      const allParticipants = [currentEmail, ...otherEmails].sort();
+      const allParticipants = [currentEmail, ...otherEmails]
+        .filter(Boolean)
+        .sort();
 
       const q = query(
         chatsRef,
@@ -114,58 +154,50 @@ export async function createOrGetChat({
 
       const existing = snap.docs.find((doc) => {
         const data = doc.data() as FirestoreChatData;
-        const participants = [...data.participants].sort();
+        const participants = Array.isArray(data.participants)
+          ? [...data.participants].sort()
+          : [];
         return (
           participants.length === allParticipants.length &&
           participants.every((p, i) => p === allParticipants[i])
         );
       });
 
-      if (existing) return existing.id;
-
-      const usersObj: Record<string, EmbeddedUser> = {};
-
-      for (const email of allParticipants) {
-        if (email) {
-          usersObj[email] = {
-            email,
-            photoURL: null,
-          };
-        }
+      if (existing) {
+        return docToChat(existing);
       }
 
-      const newChat = await addDoc(chatsRef, {
+      const usersObj: Record<string, EmbeddedUser> = {};
+      for (const email of allParticipants) {
+        if (email) usersObj[email] = { email, photoURL: null };
+      }
+
+      const payload: FirestoreChatData = {
         type: "group",
         participants: allParticipants,
         groupName: groupName ?? "New Group",
         groupImage: groupImage ?? null,
         createdAt: Date.now(),
         users: usersObj,
-      });
+      };
 
-      return newChat.id;
+      const newChat = await addDoc(chatsRef, payload);
+      return {
+        id: newChat.id,
+        type: payload.type,
+        participants: payload.participants,
+        createdAt: payload.createdAt,
+        users: payload.users,
+        groupName: payload.groupName ?? null,
+        groupImage: payload.groupImage ?? null,
+      } as ChatsData;
     }
 
     throw new Error("Invalid chat type.");
   } catch (e) {
-    console.log(JSON.stringify(e, null, 3), new Error().stack);
-    throw new Error(String(e));
+    console.error("createOrGetChat error:", e);
+    throw e;
   }
-}
-
-export async function getChatOtherUser(
-  chatId: string,
-  currentEmail: string | null
-) {
-  const chatRef = doc(db, "chats", chatId);
-  const chatSnap = await getDoc(chatRef);
-
-  if (!chatSnap.exists() || !currentEmail) return null;
-
-  const users = chatSnap.data().users as Record<string, EmbeddedUser>;
-  return Object.keys(users).length == 1
-    ? Object.values(users).find((u) => u.email)
-    : Object.values(users).find((u) => u.email !== currentEmail) || null;
 }
 
 export async function getUserChats(userEmail: string): Promise<ChatsData[]> {

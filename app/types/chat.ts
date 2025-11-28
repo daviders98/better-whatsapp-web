@@ -3,7 +3,7 @@ import { EmbeddedUser } from "./user";
 export interface ChatsData {
   id: string;
   participants: string[];
-  createdAt: number;
+  createdAt: number | undefined;
   otherUserEmail?: string;
   otherUserName?: string;
   type: ChatType;
