@@ -42,7 +42,7 @@ const Conversation = React.memo(function Conversation({
               <span
                 className={`
                     w-full
-                text-[.7rem] whitespace-pre-wrap wrap-break-word flex text-[#9fb2ab]
+                text-[.65rem] whitespace-pre-wrap wrap-break-word flex text-[#9fb2ab]
                 ${isMe ? "justify-end" : "justify-start"}
               `}
               >

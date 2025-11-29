@@ -104,7 +104,7 @@ export default function Sidebar({
 
               <div className="flex space-x-2 relative">
                 <div
-                  className="rounded-full hover:bg-gray-700 p-2 cursor-pointer"
+                  className="rounded-full hover:bg-gray-700 p-2 hover:cursor-pointer"
                   onClick={() => handleNewChat(user)}
                 >
                   <MessageSquarePlus className="w-6 h-6" />
@@ -112,7 +112,7 @@ export default function Sidebar({
 
                 <div className="relative">
                   <div
-                    className="rounded-full hover:bg-gray-700 p-2 cursor-pointer"
+                    className="rounded-full hover:bg-gray-700 p-2 hover:cursor-pointer"
                     onClick={() => setShowMenu((p) => !p)}
                   >
                     <EllipsisVertical className="w-6 h-6" />
@@ -122,7 +122,7 @@ export default function Sidebar({
                     <div className="absolute right-0 mt-2 bg-white dark:bg-gray-800 shadow-md rounded-lg w-32 p-2 z-50">
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left text-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-[#291a1d] dark:hover:text-[#fb99a5] rounded-lg flex justify-between select-none"
+                        className="w-full text-left text-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-[#291a1d] dark:hover:text-[#fb99a5] rounded-lg flex justify-between select-none hover:cursor-pointer"
                       >
                         <LogOut className="w-5 h-5" />
                         Logout
@@ -142,7 +142,7 @@ export default function Sidebar({
                 <div
                   key={chat.id}
                   onClick={() => onSelectChat(chat)}
-                  className="p-2 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-[#2a3942] transition text-gray-800 dark:text-gray-100 flex items-center"
+                  className="p-2 rounded-xl hover:cursor-pointer hover:bg-gray-200 dark:hover:bg-[#2a3942] transition text-gray-800 dark:text-gray-100 flex items-center"
                 >
                   <div className="w-12 h-12 relative shrink-0 select-none">
                     <Image

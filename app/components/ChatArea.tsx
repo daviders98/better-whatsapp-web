@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { auth } from "@/firebaseConfig";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { ChatsData } from "../types/chat";
@@ -16,6 +16,7 @@ export default function ChatArea({
 }) {
   const [user] = useAuthState(auth);
   const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const { messages } = useChatMessages(chatData.id);
 
@@ -36,6 +37,11 @@ export default function ChatArea({
     if (e.key === "Enter") handleSend();
   };
 
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [memoizedMessages]);
+
   return (
     <div className="h-full flex flex-col">
       {chatData && user && (
@@ -48,7 +54,7 @@ export default function ChatArea({
           "
         >
           <button onClick={onBack} className="md:hidden text-xl px-2">
-            <ArrowLeft className="cursor-pointer" />
+            <ArrowLeft className="hover:cursor-pointer" />
           </button>
 
           <div className="w-12 h-12 relative shrink-0 overflow-hidden rounded-full select-none">
@@ -87,7 +93,10 @@ export default function ChatArea({
         <div className="absolute inset-0 bg-[url('/images/wallpaper.png')] bg-cover bg-center brightness-20 z-0" />
 
         <div className="absolute inset-0 z-10 flex flex-col bg-transparent">
-          <div className="flex-1 overflow-auto p-4 bg-transparent pb-40">
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-auto p-4 scrollbar-custom"
+          >
             <Conversation messages={memoizedMessages} />
           </div>
 

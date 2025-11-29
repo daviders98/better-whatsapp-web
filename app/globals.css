@@ -25,13 +25,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.animated-border-box, .animated-border-box-glow {
+.animated-border-box,
+.animated-border-box-glow {
   max-height: 200px;
   max-width: 250px;
   height: 100%;
   width: 100%;
   position: absolute;
-  overflow: hidden; 
+  overflow: hidden;
   z-index: 0;
   border-radius: 10px;
 }
@@ -50,7 +51,7 @@ body {
 
 .animated-border-box:before,
 .animated-border-box-glow:before {
-  content: '';
+  content: "";
   z-index: -2;
   position: absolute;
   top: 50%;
@@ -61,23 +62,23 @@ body {
   background-repeat: no-repeat;
   background-position: 0 0;
   background-image: conic-gradient(
-    rgba(0,0,0,0),
-    #35b5fd, /* glow color */
-    rgba(0,0,0,0) 25%
+    rgba(0, 0, 0, 0),
+    #35b5fd,
+    rgba(0, 0, 0, 0) 25%
   );
   animation: rotate 4s linear infinite;
   border-radius: inherit;
 }
 
 .animated-border-box:after {
-  content: '';
+  content: "";
   position: absolute;
   z-index: -1;
   left: 5px;
   top: 5px;
   width: calc(100% - 10px);
   height: calc(100% - 10px);
-  background: #292a2e; /* card background */
+  background: #292a2e;
   border-radius: 7px;
 }
 
@@ -96,4 +97,24 @@ body {
 
 .animate-spin-slow {
   animation: spin-slow 4s linear infinite;
+}
+/* Chrome, Edge, Safari */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: rgba(69, 70, 70, 0.5);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+}
+
+/* Firefox */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(69, 70, 70, 0.5) transparent;
 }
