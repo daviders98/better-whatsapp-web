@@ -14,7 +14,12 @@ export default function Index() {
 
   useEffect(() => {
     const loginProcess = async (user: User) => {
-      await updateUserInChats(user.email!, user.photoURL, user.displayName!);
+      await updateUserInChats({
+        email: user.email!,
+        photoURL: user.photoURL,
+        name: user.displayName,
+        uid: user.uid!,
+      });
       router.push("/home");
     };
 

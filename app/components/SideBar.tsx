@@ -38,10 +38,11 @@ export default function Sidebar({
 
     try {
       const chatData = await createOrGetChat({
-        currentEmail: user.email,
+        currentEmail: user.email!,
         currentPhoto: user.photoURL,
         type: email === user.email ? "me" : "dm",
         otherEmails: email === user.email ? [] : [email],
+        currentUid: user.uid,
       });
 
       await fetchChats(user);
@@ -118,10 +119,10 @@ export default function Sidebar({
                   </div>
 
                   {showMenu && (
-                    <div className="absolute right-0 mt-2 bg-white dark:bg-gray-800 shadow-md rounded-xl w-32 p-2 z-50">
+                    <div className="absolute right-0 mt-2 bg-white dark:bg-gray-800 shadow-md rounded-lg w-32 p-2 z-50">
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left text-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl flex justify-between select-none"
+                        className="w-full text-left text-md px-2 py-2 hover:bg-gray-200 dark:hover:bg-[#291a1d] dark:hover:text-[#fb99a5] rounded-lg flex justify-between select-none"
                       >
                         <LogOut className="w-5 h-5" />
                         Logout
