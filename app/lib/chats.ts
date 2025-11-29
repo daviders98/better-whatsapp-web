@@ -9,8 +9,8 @@ import {
   QueryDocumentSnapshot,
   setDoc,
   orderBy,
-  serverTimestamp,
 } from "firebase/firestore";
+import dayjs from "dayjs";
 import {
   ChatMessage,
   ChatsData,
@@ -319,8 +319,10 @@ export async function sendChatMessage(
 ) {
   const messagesRef = collection(db, "chats", chatId, "messages");
 
-  await addDoc(messagesRef, {
+  const docRef = await addDoc(messagesRef, {
     ...message,
-    timestamp: serverTimestamp(),
+    timestamp: dayjs().toDate(),
   });
+
+  return docRef;
 }

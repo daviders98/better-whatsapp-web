@@ -39,5 +39,5 @@ export interface ChatMessage {
 export type FireBaseTimestamp = {
   type: string;
   seconds: number;
-  nanoseconds: number;
+  nanoseconds?: number;
 };
