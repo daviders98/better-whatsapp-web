@@ -1,13 +1,18 @@
 import React from "react";
-import { ChatMessage, FireBaseTimestamp } from "../types/chat";
+import { ChatMessage, ChatType, FireBaseTimestamp } from "../types/chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/firebaseConfig";
 import dayjs from "dayjs";
+import Image from "next/image";
 
 const Conversation = React.memo(function Conversation({
   messages,
+  photoURL,
+  chatType,
 }: {
   messages: ChatMessage[];
+  photoURL: string;
+  chatType: ChatType;
 }) {
   const [user] = useAuthState(auth);
 
@@ -27,6 +32,26 @@ const Conversation = React.memo(function Conversation({
             key={msg.id + msg.sender}
             className={`flex w-full ${isMe ? "justify-end" : "justify-start"}`}
           >
+            {!isMe &&
+              chatType === "group" &&
+              (() => {
+                const index = messages.findIndex((m) => m.id === msg.id);
+                const prev = messages[index - 1];
+
+                const shouldShowAvatar = !prev || prev.sender !== msg.sender;
+
+                return shouldShowAvatar ? (
+                  <Image
+                    src={photoURL}
+                    width={32}
+                    height={32}
+                    alt="chat photo"
+                    className="rounded-full mr-2 self-start"
+                  />
+                ) : (
+                  <div className="w-8 mr-2" />
+                );
+              })()}
             <div
               className={`
                 max-w-[70%] px-3 py-2 rounded-lg shadow

@@ -97,7 +97,15 @@ export default function ChatArea({
             ref={scrollRef}
             className="flex-1 overflow-auto p-4 scrollbar-custom"
           >
-            <Conversation messages={memoizedMessages} />
+            <Conversation
+              messages={memoizedMessages}
+              photoURL={
+                chatData.photoURL || chatData.type == "group"
+                  ? "/images/default-group.png"
+                  : "/images/default-avatar.png"
+              }
+              chatType={chatData.type}
+            />
           </div>
 
           <div
