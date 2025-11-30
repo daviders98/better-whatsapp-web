@@ -1,9 +1,9 @@
 import React from "react";
-import { ChatMessage, ChatType, FireBaseTimestamp } from "../types/chat";
+import { ChatMessage, ChatType } from "../types/chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "@/firebaseConfig";
-import dayjs from "dayjs";
 import Image from "next/image";
+import { formatTime } from "../lib/chats";
 
 const Conversation = React.memo(function Conversation({
   messages,
@@ -15,13 +15,6 @@ const Conversation = React.memo(function Conversation({
   chatType: ChatType;
 }) {
   const [user] = useAuthState(auth);
-
-  const formatTime = (ts: FireBaseTimestamp): string => {
-    const date = new Date(ts.seconds * 1000);
-
-    const localTime = dayjs(date).format("HH:mm");
-    return localTime;
-  };
 
   return (
     <div className="space-y-2">
@@ -71,7 +64,7 @@ const Conversation = React.memo(function Conversation({
                 ${isMe ? "justify-end" : "justify-start"}
               `}
               >
-                {msg.timestamp && formatTime(msg.timestamp)}
+                {msg.timestamp && formatTime({ ts: msg.timestamp })}
               </span>
             </div>
           </div>

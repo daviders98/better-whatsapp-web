@@ -9,6 +9,7 @@ import { auth } from "@/firebaseConfig";
 import { useRouter } from "next/navigation";
 import Loading from "../components/Loading";
 import { ChatsData } from "../types/chat";
+import { User } from "firebase/auth";
 
 export default function Home() {
   const [user, loading] = useAuthState(auth);
@@ -36,7 +37,7 @@ export default function Home() {
           ${selectedChat ? "hidden md:block" : "block"}
         `}
           >
-            <SideBar onSelectChat={setSelectedChat} />
+            <SideBar onSelectChat={setSelectedChat} user={user as User} />
           </div>
 
           <div

@@ -1,9 +1,10 @@
 import { EmbeddedUser } from "./user";
 
 export interface ChatsData {
+  latestMessage?: ChatMessage;
   id: string;
   participants: string[];
-  createdAt: number | undefined;
+  createdAt: Date | undefined;
   otherUserEmail?: string | null;
   otherUserName?: string | null;
   type: ChatType;
@@ -14,6 +15,8 @@ export interface ChatsData {
   groupName?: string | null | undefined;
   participantUids: string[];
   participantsSynced: boolean;
+  messages?: ChatMessage[];
+  latestMessageTimestamp?: Date | undefined;
 }
 
 export type ChatType = "group" | "dm" | "me";
@@ -21,12 +24,14 @@ export type ChatType = "group" | "dm" | "me";
 export interface FirestoreChatData {
   participants: string[];
   participantUids: string[];
-  createdAt: number;
+  createdAt: Date;
   type: ChatType;
   groupName?: string;
   groupImage?: string | null;
   users?: object;
   participantsSynced: boolean;
+  latestMessage?: Omit<ChatMessage, "id">;
+  latestMessageTimestamp?: Date | undefined;
 }
 
 export interface ChatMessage {

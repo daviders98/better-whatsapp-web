@@ -9,12 +9,14 @@ import {
   QueryDocumentSnapshot,
   setDoc,
   orderBy,
+  doc,
 } from "firebase/firestore";
 import dayjs from "dayjs";
 import {
   ChatMessage,
   ChatsData,
   ChatType,
+  FireBaseTimestamp,
   FirestoreChatData,
 } from "../types/chat";
 import { EmbeddedUser } from "../types/user";
@@ -63,10 +65,8 @@ function docToChat(
     if (d.type === "dm") {
       otherUserEmail = participants.find((p) => p !== currentEmail) || null;
       if (otherUserEmail) {
-        console.log("asdasdasd");
         otherUserName = users[otherUserEmail]?.name ?? otherUserEmail;
         photoURL = users[otherUserEmail]?.photoURL ?? null;
-        console.log("kkkkk", photoURL);
       }
     } else if (d.type === "me") {
       photoURL = users[currentEmail]?.photoURL ?? null;
@@ -86,6 +86,12 @@ function docToChat(
     otherUserEmail,
     otherUserName,
     photoURL,
+    latestMessage: d.latestMessage as ChatMessage,
+    latestMessageTimestamp:
+      d.latestMessageTimestamp instanceof Date ||
+      typeof d.latestMessageTimestamp === "object"
+        ? d.latestMessageTimestamp
+        : undefined,
   };
 }
 
@@ -109,6 +115,7 @@ export async function createOrGetChat({
   groupImage?: string;
 }): Promise<ChatsData> {
   const chatsRef = collection(db, "chats");
+  const now = new Date();
 
   const localUserObj = embedLocalUser(
     currentUid,
@@ -132,7 +139,8 @@ export async function createOrGetChat({
       participants: [currentEmail],
       participantUids: [currentUid],
       participantsSynced: true,
-      createdAt: Date.now(),
+      createdAt: now,
+      latestMessageTimestamp: now,
       users: {
         [currentEmail]: localUserObj,
       },
@@ -172,7 +180,8 @@ export async function createOrGetChat({
       participants: [currentEmail, otherEmail],
       participantUids: [currentUid],
       participantsSynced: false,
-      createdAt: Date.now(),
+      createdAt: now,
+      latestMessageTimestamp: now,
       users: {
         [currentEmail]: localUserObj,
         [otherEmail]: embedRemoteUser(otherEmail),
@@ -206,7 +215,6 @@ export async function createOrGetChat({
     if (existing) return docToChat(existing, currentEmail);
 
     const usersObj: Record<string, EmbeddedUser> = {};
-
     for (const email of all) {
       usersObj[email] =
         email === currentEmail ? localUserObj : embedRemoteUser(email);
@@ -217,7 +225,8 @@ export async function createOrGetChat({
       participants: all,
       participantUids: [currentUid],
       participantsSynced: false,
-      createdAt: Date.now(),
+      createdAt: now,
+      latestMessageTimestamp: now,
       groupName: groupName ?? "New Group",
       groupImage: groupImage ?? null,
       users: usersObj,
@@ -233,15 +242,19 @@ export async function createOrGetChat({
   throw new Error("Invalid chat type");
 }
 
-export async function getUserChats(userEmail: string): Promise<ChatsData[]> {
-  const snapshot = await getDocs(
-    query(
-      collection(db, "chats"),
-      where("participants", "array-contains", userEmail)
-    )
-  );
+export function useUserChats(userEmail: string | null) {
+  const chatsQuery = userEmail
+    ? query(
+        collection(db, "chats"),
+        where("participants", "array-contains", userEmail),
+        orderBy("latestMessageTimestamp", "desc")
+      )
+    : null;
 
-  return snapshot.docs.map((docSnap) => docToChat(docSnap, userEmail));
+  const [snapshot, loading] = useCollection(chatsQuery);
+  const chats = snapshot?.docs.map((doc) => docToChat(doc, userEmail!)) ?? [];
+
+  return { chats, loading };
 }
 
 export async function updateUserInChats({
@@ -303,12 +316,11 @@ export function useChatMessages(chatId: string | undefined) {
 
   const [snapshot, loading] = useCollection(messagesQuery);
 
-  const messages: ChatMessage[] = snapshot
-    ? snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<ChatMessage, "id">),
-      }))
-    : [];
+  const messages: ChatMessage[] =
+    snapshot?.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<ChatMessage, "id">),
+    })) ?? [];
 
   return { messages, loading };
 }
@@ -319,10 +331,46 @@ export async function sendChatMessage(
 ) {
   const messagesRef = collection(db, "chats", chatId, "messages");
 
+  const timestamp = new Date();
+
   const docRef = await addDoc(messagesRef, {
     ...message,
-    timestamp: dayjs().toDate(),
+    timestamp,
   });
+
+  await setDoc(
+    doc(db, "chats", chatId),
+    {
+      latestMessage: {
+        text: message.text,
+        sender: message.sender,
+        timestamp,
+      },
+      latestMessageTimestamp: timestamp,
+    },
+    { merge: true }
+  );
 
   return docRef;
 }
+
+export const formatTime = ({
+  ts,
+  isInSideBar = false,
+}: {
+  ts: FireBaseTimestamp;
+  isInSideBar?: boolean;
+}): string => {
+  if (!ts || !ts.seconds) return "";
+
+  const date = dayjs(ts.seconds * 1000);
+  const now = dayjs();
+
+  if (!isInSideBar) return date.format("HH:mm");
+
+  if (date.isSame(now, "day")) return date.format("HH:mm");
+  if (date.isSame(now.subtract(1, "day"), "day")) return "Yesterday";
+  if (now.diff(date, "day") < 7) return date.format("dddd");
+
+  return date.format("DD/MM/YYYY");
+};
