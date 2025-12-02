@@ -3,9 +3,10 @@ import { auth } from "@/firebaseConfig";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { ChatsData } from "../types/chat";
 import Image from "next/image";
-import { ArrowLeft, SendHorizontal } from "lucide-react";
+import { ArrowLeft, Languages, SendHorizontal } from "lucide-react";
 import { sendChatMessage, useChatMessages } from "../lib/chats";
 import Conversation from "./Conversation";
+import AItoolsContainer from "./AIToolsContainer";
 
 export default function ChatArea({
   chatData,
@@ -15,8 +16,17 @@ export default function ChatArea({
   onBack: () => void;
 }) {
   const [user] = useAuthState(auth);
+
   const [input, setInput] = useState("");
+  const [srcLang, setSrcLang] = useState("eng_Latn");
+  const [tgtLang, setTgtLang] = useState("spa_Latn");
+
+  const [showTools, setShowTools] = useState(false);
+  const [warning, setWarning] = useState("");
+  const [shake, setShake] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { messages } = useChatMessages(chatData.id);
 
@@ -41,6 +51,32 @@ export default function ChatArea({
     if (!scrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [memoizedMessages]);
+  useEffect(() => {
+    return () => {
+      if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!input.length && showTools) {
+      Promise.resolve().then(() => setShowTools(false));
+    }
+  }, [input, showTools]);
+
+  const triggerWarning = (msg: string) => {
+    setWarning(msg);
+    setShake(true);
+
+    setTimeout(() => setShake(false), 400);
+
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+    }
+
+    warningTimeoutRef.current = setTimeout(() => {
+      setWarning("");
+    }, 2000);
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -65,6 +101,7 @@ export default function ChatArea({
               className="object-cover select-none"
             />
           </div>
+
           <div className="ml-3 font-medium flex-1 min-w-0 select-none">
             {chatData.type === "me" ? (
               <>
@@ -91,7 +128,6 @@ export default function ChatArea({
 
       <div className="h-full flex flex-col relative bg-transparent">
         <div className="absolute inset-0 bg-[url('/images/wallpaper.png')] bg-cover bg-center brightness-20 z-0" />
-
         <div className="absolute inset-0 z-10 flex flex-col bg-transparent">
           <div
             ref={scrollRef}
@@ -108,34 +144,68 @@ export default function ChatArea({
             />
           </div>
 
-          <div
-            className="
-              px-4 pb-4
-              border-transparent
-              bg-transparent
-              flex items-center
-              shadow
-            "
-          >
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="
-                focus:outline-none focus:ring-0 focus:border-transparent
-                w-full px-3 py-2 pr-12 rounded-full
-                bg-[#2a3942]
-                text-gray-900 dark:text-gray-100
-              "
-              placeholder="Type a message"
+          <div className="px-4 pb-4 relative">
+            <AItoolsContainer
+              open={showTools}
+              onClose={() => setShowTools(false)}
+              input={input}
+              setInput={setInput}
+              srcLang={srcLang}
+              tgtLang={tgtLang}
+              setSrcLang={setSrcLang}
+              setTgtLang={setTgtLang}
             />
 
-            <button
-              onClick={handleSend}
-              className="absolute right-4 p-2 bg-[#31DBBC] rounded-full"
-            >
-              <SendHorizontal className="w-6 h-6 text-[#202c33]" />
-            </button>
+            <div className="w-full bg-[#2a3942] rounded-2xl p-2 flex flex-col gap-2">
+              {warning && (
+                <div
+                  className={`px-2 text-red-400 text-sm ${
+                    shake ? "shake" : ""
+                  }`}
+                >
+                  {warning}
+                </div>
+              )}
+
+              <div className="flex items-center gap-4 px-2">
+                <button
+                  onClick={() => {
+                    if (!input.length) {
+                      triggerWarning(
+                        "Type a message before using AI translation."
+                      );
+                      return;
+                    }
+                    setShowTools(!showTools);
+                  }}
+                  className="text-gray-300 transition rounded-full p-2 hover:text-white hover:bg-gray-500 hover:cursor-pointer"
+                >
+                  <Languages className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex items-center relative">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="
+                    flex-1 px-3 py-2 rounded-xl
+                    bg-[#1f2c33]
+                    text-gray-100 placeholder-gray-400
+                    focus:outline-none
+                  "
+                  placeholder="Type a message"
+                />
+
+                <button
+                  onClick={handleSend}
+                  className="ml-2 p-2 bg-[#31DBBC] rounded-full hover:cursor-pointer"
+                >
+                  <SendHorizontal className="w-5 h-5 text-[#202c33]" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

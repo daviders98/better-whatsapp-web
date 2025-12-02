@@ -1,6 +1,6 @@
 import React from "react";
-import { CircularProgress } from "@mui/material";
 import Image from "next/image";
+import { Loader2 } from "lucide-react";
 
 function Loading() {
   return (
@@ -14,9 +14,7 @@ function Loading() {
           height={200}
           width={200}
         />
-        <CircularProgress
-          style={{ color: "#34b6f8", width: "60px", height: "60px" }}
-        />
+        <Loader2 className="w-12 h-12 animate-spin text-white" />
       </div>
     </center>
   );
