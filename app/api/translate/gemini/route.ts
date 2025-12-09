@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 export const runtime = "nodejs";
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY!;
-console.log(GEMINI_KEY);
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 export async function GET(req: Request) {

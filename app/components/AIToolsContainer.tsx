@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import AITranslation from "./AITranslation";
 import { CopyCheck } from "lucide-react";
+import { translateLocal } from "../lib/localLLM";
 
 export default function AItoolsContainer({
   open,
@@ -47,15 +48,12 @@ export default function AItoolsContainer({
   }, [copied]);
 
   const translate = async () => {
-    const query = `text=${encodeURIComponent(input)}&src=${srcLang}&tgt=${tgtLang}`;
-
     try {
-      const geminiRes = await fetch(`/api/translate/gemini?${query}`);
-      const data = await geminiRes.json();
-      if (data.translated) return data.translated;
-    } catch {}
-
-    return "";
+      return await translateLocal(input, srcLang, tgtLang);
+    } catch (err) {
+      console.log("LLM error:", err);
+      return "";
+    }
   };
 
   const handleTranslate = async () => {
@@ -87,15 +85,8 @@ export default function AItoolsContainer({
 
   return (
     <>
-      {/* Copy popup stays independent of loading */}
       {copied && (
-        <div
-          className="
-            absolute left-4 -top-12
-            bg-[#31DBBC] text-[#202c33] px-4 py-2 rounded-xl 
-            shadow-lg z-20 flex items-center gap-2
-          "
-        >
+        <div className="absolute left-4 -top-12 bg-[#31DBBC] text-[#202c33] px-4 py-2 rounded-xl shadow-lg z-20 flex items-center gap-2">
           <CopyCheck />
           Copied to clipboard
         </div>
@@ -104,15 +95,11 @@ export default function AItoolsContainer({
       <div
         ref={wrapperRef}
         onTransitionEnd={handleTransitionEnd}
-        className={`
-          absolute left-4 bottom-21 mb-2 z-50
-          transition-all duration-200
-          ${
-            open
-              ? "opacity-100 -translate-y-6"
-              : "opacity-0 translate-y-0 pointer-events-none"
-          }
-        `}
+        className={`absolute left-4 bottom-21 mb-2 z-50 transition-all duration-200 ${
+          open
+            ? "opacity-100 -translate-y-6"
+            : "opacity-0 translate-y-0 pointer-events-none"
+        }`}
         style={{ width: "260px" }}
       >
         <AITranslation

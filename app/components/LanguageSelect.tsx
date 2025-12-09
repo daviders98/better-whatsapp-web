@@ -26,7 +26,7 @@ export default function LanguageSelect({
           className="bg-[#1f2c33] px-2 pr-8 py-1 h-8 rounded-md text-gray-100 text-sm w-full appearance-none"
         >
           {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>
+            <option key={lang.language} value={lang.language}>
               {lang.language}
             </option>
           ))}

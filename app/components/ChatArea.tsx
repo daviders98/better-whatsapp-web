@@ -18,8 +18,8 @@ export default function ChatArea({
   const [user] = useAuthState(auth);
 
   const [input, setInput] = useState("");
-  const [srcLang, setSrcLang] = useState("eng_Latn");
-  const [tgtLang, setTgtLang] = useState("spa_Latn");
+  const [srcLang, setSrcLang] = useState("English");
+  const [tgtLang, setTgtLang] = useState("Spanish");
 
   const [showTools, setShowTools] = useState(false);
   const [warning, setWarning] = useState("");

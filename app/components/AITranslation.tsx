@@ -53,7 +53,7 @@ export default function AITranslation({
                 className="bg-[#1f2c33] px-3 py-2 rounded-lg w-full text-sm"
               >
                 {languages.map((l) => (
-                  <option key={l.code} value={l.code}>
+                  <option key={l.language} value={l.language}>
                     {l.language}
                   </option>
                 ))}
@@ -76,7 +76,7 @@ export default function AITranslation({
                 className="bg-[#1f2c33] px-3 py-2 rounded-lg w-full text-sm"
               >
                 {languages.map((l) => (
-                  <option key={l.code} value={l.code}>
+                  <option key={l.language} value={l.language}>
                     {l.language}
                   </option>
                 ))}
