@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateUserInChats } from "./lib/chats";
 import { User } from "firebase/auth";
+import { warmupTranslator } from "./lib/localLLM";
 
 export default function Index() {
   const [user, loading] = useAuthState(auth);
@@ -14,12 +15,15 @@ export default function Index() {
 
   useEffect(() => {
     const loginProcess = async (user: User) => {
+      warmupTranslator().catch(console.error);
+
       await updateUserInChats({
         email: user.email!,
         photoURL: user.photoURL,
         name: user.displayName,
         uid: user.uid!,
       });
+
       router.push("/home");
     };
 
